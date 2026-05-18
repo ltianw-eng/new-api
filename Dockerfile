@@ -24,8 +24,9 @@ COPY web/classic/package.json .
 COPY web/classic/bun.lock .
 RUN bun install
 
-# 关键：更新 browserslist 数据，这必须在安装依赖之后进行
-RUN npx update-browserslist-db@latest
+# 更新 browserslist 数据，使用 bunx 而不是 npx
+RUN bun install --dev update-browserslist-db
+RUN bunx update-browserslist-db@latest
 
 # 更新 lottie-web
 RUN bun update lottie-web
