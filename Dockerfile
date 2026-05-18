@@ -37,10 +37,10 @@ COPY ./VERSION .
 # 设置环境变量
 ENV BROWSERSLIST_IGNORE_OLD_DATA=1
 ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max_old_space_size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 
-# 分步执行构建以节省内存
-RUN VITE_REACT_APP_VERSION=$(cat VERSION) bunx rsbuild build
+# 使用 bunx 直接调用 Rsbuild，避免使用 package.json 中可能存在的错误脚本
+RUN VITE_REACT_APP_VERSION=$(cat VERSION) bunx @rsbuild/core build
 
 FROM golang:1.26.1-alpine@sha256:2389ebfa5b7f43eeafbd6be0c3700cc46690ef842ad962f6c5bd6be49ed82039 AS builder2
 ENV GO111MODULE=on CGO_ENABLED=0
