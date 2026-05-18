@@ -18,19 +18,14 @@ RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat VERSION) bun run b
 FROM oven/bun:1@sha256:0733e50325078969732ebe3b15ce4c4be5082f18c4ac1a0f0ca4839c2e4e42a7 AS builder-classic
 
 WORKDIR /build
+
+# 复制 package 文件并安装依赖
 COPY web/classic/package.json .
 COPY web/classic/bun.lock .
-
-# 安装依赖
 RUN bun install
 
-# 检查 Rsbuild 是否已安装
-RUN ls -la node_modules/.bin/ | grep rsbuild || echo "Rsbuild binary not found"
-RUN bunx rsbuild --version || echo "Rsbuild not available via bunx"
-
-# 更新 browserslist
-RUN bun install --dev update-browserslist-db
-RUN bunx update-browserslist-db@latest
+# 关键：更新 browserslist 数据，这必须在安装依赖之后进行
+RUN npx update-browserslist-db@latest
 
 # 更新 lottie-web
 RUN bun update lottie-web
@@ -38,8 +33,8 @@ RUN bun update lottie-web
 COPY ./web/classic .
 COPY ./VERSION .
 
-# 检查 package.json 中的构建脚本
-RUN echo "=== Package.json build script ===" && cat package.json | jq '.scripts.build'
+# 设置环境变量，抑制 browserslist 警告
+ENV BROWSERSLIST_IGNORE_OLD_DATA=1
 
 # 执行构建
 RUN VITE_REACT_APP_VERSION=$(cat VERSION) bun run build
