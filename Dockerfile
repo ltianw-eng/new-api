@@ -8,9 +8,8 @@ RUN bun install
 COPY ./web/default .
 COPY ./VERSION .
 
-# 使用 bun 安装并运行 browserslist 更新工具
-RUN bun add --dev update-browserslist-db
-RUN bunx update-browserslist-db@latest
+# 使用 bun 安装并立即运行 browserslist 更新工具
+RUN bun install --dev update-browserslist-db && bunx update-browserslist-db@latest
 
 # 更新 lottie-web
 RUN bun update lottie-web
@@ -23,14 +22,15 @@ WORKDIR /build
 COPY web/classic/package.json .
 COPY web/classic/bun.lock .
 RUN bun install
+
 COPY ./web/classic .
 COPY ./VERSION .
 
-# 为经典版也执行相同的更新操作
-RUN bun add --dev update-browserslist-db
-RUN bunx update-browserslist-db@latest
+# 为经典版也执行相同的 browserslist 更新操作
+RUN bun install --dev update-browserslist-db && bunx update-browserslist-db@latest
 RUN bun update lottie-web
 
+# 根据日志显示，经典版仍在使用 vite，所以我们也需要在这里处理
 RUN VITE_REACT_APP_VERSION=$(cat VERSION) bun run build
 
 FROM golang:1.26.1-alpine@sha256:2389ebfa5b7f43eeafbd6be0c3700cc46690ef842ad962f6c5bd6be49ed82039 AS builder2
