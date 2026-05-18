@@ -5,11 +5,15 @@ COPY web/default/package.json .
 COPY web/default/bun.lock .
 RUN bun install
 
-# 在构建前更新 browserslist 数据库并升级 lottie-web
 COPY ./web/default .
 COPY ./VERSION .
-RUN npx update-browserslist-db@latest || echo "Could not update browserslist db"
-RUN bun update lottie-web || echo "Could not update lottie-web"
+
+# 使用 bun 安装并运行 browserslist 更新工具
+RUN bun add --dev update-browserslist-db
+RUN bunx update-browserslist-db@latest
+
+# 更新 lottie-web
+RUN bun update lottie-web
 
 RUN DISABLE_ESLINT_PLUGIN='true' VITE_REACT_APP_VERSION=$(cat VERSION) bun run build
 
@@ -22,9 +26,10 @@ RUN bun install
 COPY ./web/classic .
 COPY ./VERSION .
 
-# 同样为 classic 版本更新 browserslist 和 lottie-web
-RUN npx update-browserslist-db@latest || echo "Could not update browserslist db"
-RUN bun update lottie-web || echo "Could not update lottie-web"
+# 为经典版也执行相同的更新操作
+RUN bun add --dev update-browserslist-db
+RUN bunx update-browserslist-db@latest
+RUN bun update lottie-web
 
 RUN VITE_REACT_APP_VERSION=$(cat VERSION) bun run build
 
